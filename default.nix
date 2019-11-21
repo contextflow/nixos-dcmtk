@@ -1,13 +1,33 @@
 { pkgs ? import <nixpkgs> {} }:
 with pkgs;
 stdenv.mkDerivation rec {
-	version = "20170509";
+	version = "3.6.5";
 	name = "dcmtk-${version}";
-	src = fetchgit {
-		url = "git://git.dcmtk.org/dcmtk.git";
-		rev = "41853806778665673d36eeb196e5fa76e85c841a";
-		sha256 = "1lcwi02pryqs7yjyc6nz470bpr12n0ccsz1i0lwns4rv3sjb2g06";
+	mysrc = builtins.fetchGit {
+		url = "https://github.com/DCMTK/dcmtk.git";
+		rev = "0f2de2313a00f9360bdf33399a2f37ee5e65c429";
+#        ref = "tags/DCMTK-3.6.5";
 	};
-    buildInputs = [	zlib libtiff libpng libxml2 ];
+    buildInputs = [	zlib libtiff libpng libxml2 cmake ];
+
+    unpackPhase = ":";
+    configurePhase = ''
+      ls -l
+      cmake ${mysrc};
+      ls -l
+      '';
+    buildPhase = ''
+      make -j8
+      ls -l
+    '';
+
+    installPhase = ''
+      mkdir ./dest 
+      make DESTDIR=./dest install
+      ls -l ./dest
+      mkdir $out
+      cp -r dest/var/empty/local/* $out/
+
+    '';
 }
 
